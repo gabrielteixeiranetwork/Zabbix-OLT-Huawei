@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-04-10T20:18:26Z</date>
+    <groups>
+        <group>
+            <name>Gabriel Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Gabriel Huawei OLT</template>
+            <name>Gabriel Huawei OLT</name>
+            <groups>
+                <group>
+                    <name>Gabriel Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Chassi</name>
+                </application>
+                <application>
+                    <name>Contagem</name>
+                </application>
+                <application>
+                    <name>CPU</name>
+                </application>
+                <application>
+                    <name>Energia</name>
+                </application>
+                <application>
+                    <name>Indisponibilidade</name>
+                </application>
+                <application>
+                    <name>Informações</name>
+                </application>
+                <application>
+                    <name>ONT</name>
+                </application>
+                <application>
+                    <name>Sinal Óptico</name>
+                </application>
+                <application>
+                    <name>Status</name>
+                </application>
+                <application>
+                    <name>Temperatura</name>
+                </application>
+                <application>
+                    <name>Tráfego</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Consumo Total</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>iso.3.6.1.4.1.2011.2.6.7.1.1.1.1.11.0</snmp_oid>
+                    <key>hwMusaFramePower</key>
+                    <delay>5m</delay>
+                    <history>30d</history>
+                    <units>w</units>
+                    <applications>
+                        <application>
+                            <name>Chassi</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Uptime</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>1.3.6.1.2.1.1.3.0</snmp_oid>
+                    <key>sysTimeUptime</key>
+                    <delay>30m</delay>
+                    <history>30d</history>
+                    <units>uptime</units>
+                    <applications>
+                        <application>
+                            <name>Chassi</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.01</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{change()}&lt;0</expression>
+                            <name>Uptime</name>
+                            <priority>HIGH</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <discovery_rules>
+                <discovery_rule>
+                    <name>Descoberta de ONT</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#ONUNAME},.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.9]</snmp_oid>
+                    <key>hwGponDeviceOntDespt</key>
+                    <delay>1h</delay>
+                    <lifetime>1d</lifetime>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Ultima Queda {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.46.1.24.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponDeviceOntControlLastDownCause[{#SNMPINDEX}]</key>
+                            <delay>5m</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>SN {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.3.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponDeviceOntSn[{#SNMPINDEX}]</key>
+                            <delay>1d</delay>
+                            <history>7d</history>
+                            <trends>0</trends>
+                            <value_type>CHAR</value_type>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>RX {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.51.1.4.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOntOpticalDdmRxPower[{#SNMPINDEX}]</key>
+                            <delay>1h</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <value_type>FLOAT</value_type>
+                            <units>dBm</units>
+                            <description>The receiving power of the optical module, unit 0.01dBm.</description>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>0.01</params>
+                                </step>
+                            </preprocessing>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>({TRIGGER.VALUE}=0 and {avg(3h)}&lt;-27) or&#13;
+({TRIGGER.VALUE}=1 and {avg(3h)}&lt;-30)</expression>
+                                    <name>Sinal Atenuado {#ONUNAME}</name>
+                                    <priority>INFO</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Temperatura {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.51.1.1.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOntOpticalDdmTemperature[{#SNMPINDEX}]</key>
+                            <delay>1h</delay>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>Cº</units>
+                            <description>The temperature of the optical module, unit C(centigrade).</description>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{avg(5m)}&gt;=70&#13;
+and&#13;
+{avg(5m)}&lt;=100</expression>
+                                    <name>Temperatura Alta {#ONUNAME}</name>
+                                    <priority>INFO</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Upload {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.4.23.1.3.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOntStatisticUpBytes[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>bps</units>
+                            <description>This object indicates the upstream bytes.</description>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Download {#ONUNAME}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.4.23.1.4.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOntStatistiDownBytes[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>30d</trends>
+                            <units>bps</units>
+                            <description>This object indicates the downstream frames.</description>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>Descoberta de Placas</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#PLACA},iso.3.6.1.4.1.2011.6.3.3.2.1.3]</snmp_oid>
+                    <key>hwSlotDesc</key>
+                    <delay>1d</delay>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Processamento {#PLACA}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.2.6.7.1.1.2.1.5.{#SNMPINDEX}</snmp_oid>
+                            <key>hwMusaBoardCpuRate[{#SNMPINDEX}]</key>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <units>%</units>
+                            <applications>
+                                <application>
+                                    <name>Chassi</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{avg(5m)}&gt;=85</expression>
+                                    <name>Processador acima de 85% {#PLACA}</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Consumo {#PLACA}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.2.6.7.1.1.2.1.11.{#SNMPINDEX}</snmp_oid>
+                            <key>hwMusaBoardPower[{#SNMPINDEX}]</key>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <units>w</units>
+                            <applications>
+                                <application>
+                                    <name>Chassi</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Temperatura {#PLACA}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.2.6.7.1.1.2.1.10.{#SNMPINDEX}</snmp_oid>
+                            <key>hwMusaBoardTemperature[{#SNMPINDEX}]</key>
+                            <delay>5m</delay>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <units>Cº</units>
+                            <applications>
+                                <application>
+                                    <name>Chassi</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{avg(5m)}&gt;=70&#13;
+and&#13;
+{avg(5m)}&lt;=100</expression>
+                                    <name>Têmperatura Alta {#PLACA}</name>
+                                    <priority>WARNING</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <name>Consumo {#PLACA}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>hwMusaBoardPower[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <name>Processamento {#PLACA}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>hwMusaBoardCpuRate[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <name>Temperatura {#PLACA}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>hwMusaBoardTemperature[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>Descoberta de PON</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#PON},iso.3.6.1.2.1.31.1.1.1.1]</snmp_oid>
+                    <key>ifNamePon</key>
+                    <delay>1d</delay>
+                    <filter>
+                        <conditions>
+                            <condition>
+                                <macro>{#PON}</macro>
+                                <value>(GPON)</value>
+                                <formulaid>A</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Total {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.21.1.16.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponDeviceOltControlOntNum[{#SNMPINDEX}]</key>
+                            <delay>10m</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <description>This object indicates the number of ONTs that are added to the port.</description>
+                            <applications>
+                                <application>
+                                    <name>Contagem</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                                    <params>3h</params>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Status {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.21.1.10.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponDeviceOltControlStatus[{#SNMPINDEX}]</key>
+                            <delay>10m</delay>
+                            <history>7d</history>
+                            <trends>90d</trends>
+                            <description>This object indicates the GPON port status in the OLT.</description>
+                            <applications>
+                                <application>
+                                    <name>ONT</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}=2</expression>
+                                    <name>Porta Down {#PON}</name>
+                                    <priority>INFO</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Temperatura {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.23.1.1.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOltOpticsDdmInfoTemperature[{#SNMPINDEX}]</key>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <units>Cº</units>
+                            <description>This object indicates the optics temperature, units of C(centigrade).</description>
+                            <applications>
+                                <application>
+                                    <name>Temperatura</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;=70&#13;
+and&#13;
+{last()}&lt;=100</expression>
+                                    <name>Temperatura Alta {#PON}</name>
+                                    <priority>WARNING</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>TX {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.4.1.2011.6.128.1.1.2.23.1.4.{#SNMPINDEX}</snmp_oid>
+                            <key>hwGponOltOpticsDdmInfoTxPower[{#SNMPINDEX}]</key>
+                            <delay>1h</delay>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <value_type>FLOAT</value_type>
+                            <units>dBm</units>
+                            <description>This object indicates the optics send power, units of 0.01dBm.</description>
+                            <applications>
+                                <application>
+                                    <name>Sinal Óptico</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>0.01</params>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Download {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}</snmp_oid>
+                            <key>ifHCInOctetsPon[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>120d</trends>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Tráfego</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Upload {#PON}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}</snmp_oid>
+                            <key>ifHCOutOctetsPon[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>120d</trends>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Tráfego</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Online {#PON}</name>
+                            <type>EXTERNAL</type>
+                            <key>pon[&quot;{$SNMP_COMMUNITY}&quot;,&quot;{HOST.CONN}&quot;,&quot;{#SNMPINDEX}&quot;,&quot;1&quot;]</key>
+                            <delay>30m</delay>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <applications>
+                                <application>
+                                    <name>Contagem</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Offline {#PON}</name>
+                            <type>EXTERNAL</type>
+                            <key>pon[&quot;{$SNMP_COMMUNITY}&quot;,&quot;{HOST.CONN}&quot;,&quot;{#SNMPINDEX}&quot;,&quot;2&quot;]</key>
+                            <delay>30m</delay>
+                            <history>15d</history>
+                            <trends>90d</trends>
+                            <applications>
+                                <application>
+                                    <name>Contagem</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <name>Interface {#PON}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <drawtype>BOLD_LINE</drawtype>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>ifHCInOctetsPon[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <sortorder>2</sortorder>
+                                    <drawtype>BOLD_LINE</drawtype>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>ifHCOutOctetsPon[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <name>Total de ONUs</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>hwGponDeviceOltControlOntNum[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                        <graph_prototype>
+                            <name>TX {#PON}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>hwGponOltOpticsDdmInfoTxPower[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>Descoberta de UPLINK</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#UPLINK},iso.3.6.1.2.1.31.1.1.1.1]</snmp_oid>
+                    <key>ifNameUplink</key>
+                    <delay>1d</delay>
+                    <filter>
+                        <conditions>
+                            <condition>
+                                <macro>{#UPLINK}</macro>
+                                <value>(ethernet)</value>
+                                <formulaid>A</formulaid>
+                            </condition>
+                        </conditions>
+                    </filter>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Download {#UPLINK}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.2.1.31.1.1.1.6.{#SNMPINDEX}</snmp_oid>
+                            <key>ifHCInOctetsUplink[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>120d</trends>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Tráfego</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>Upload {#UPLINK}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>1.3.6.1.2.1.31.1.1.1.10.{#SNMPINDEX}</snmp_oid>
+                            <key>ifHCOutOctetsUplink[{#SNMPINDEX}]</key>
+                            <history>7d</history>
+                            <trends>120d</trends>
+                            <units>bps</units>
+                            <applications>
+                                <application>
+                                    <name>Tráfego</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <params>8</params>
+                                </step>
+                                <step>
+                                    <type>CHANGE_PER_SECOND</type>
+                                    <params/>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <name>Interface {#UPLINK}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <drawtype>BOLD_LINE</drawtype>
+                                    <color>1A7C11</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>ifHCInOctetsUplink[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                                <graph_item>
+                                    <sortorder>2</sortorder>
+                                    <drawtype>BOLD_LINE</drawtype>
+                                    <color>F63100</color>
+                                    <item>
+                                        <host>Gabriel Huawei OLT</host>
+                                        <key>ifHCOutOctetsUplink[{#SNMPINDEX}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+            </discovery_rules>
+        </template>
+    </templates>
+    <graphs>
+        <graph>
+            <name>Consumo Total</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <color>1A7C11</color>
+                    <item>
+                        <host>Gabriel Huawei OLT</host>
+                        <key>hwMusaFramePower</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+        <graph>
+            <name>Uptime</name>
+            <graph_items>
+                <graph_item>
+                    <sortorder>1</sortorder>
+                    <color>1A7C11</color>
+                    <item>
+                        <host>Gabriel Huawei OLT</host>
+                        <key>sysTimeUptime</key>
+                    </item>
+                </graph_item>
+            </graph_items>
+        </graph>
+    </graphs>
+</zabbix_export>
